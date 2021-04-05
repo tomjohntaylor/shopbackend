@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from saleprocess.models import Profile, Order
 from saleprocess.api.serializers import ProfileSerializer, OrderSerializer
+from saleprocess.api.permissions import IsOrderOwner
 
 
 class CurrentProfileDetailAPIView(generics.RetrieveAPIView):
@@ -28,3 +29,9 @@ class CurrentProfileOrderListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         profile = get_object_or_404(Profile, user=self.request.user)
         serializer.save(profile=profile)
+
+
+class CurrentProfileOrderDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsOrderOwner]

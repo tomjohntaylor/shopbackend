@@ -77,7 +77,6 @@ class OrderOperationsTest(APITestCase):
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(len(Order.objects.filter(profile=Profile.objects.get(user=self.user1))), 2)
 
-
     # authorized user can't create order passing product id that doesnt exist
     def test_if_authorized_user_cant_create_order_if_passing_non_existing_product(self):
         self.client.force_authenticate(user=self.user1)
@@ -112,12 +111,38 @@ class OrderOperationsTest(APITestCase):
         response_orders_list = [Order.objects.get(id=id) for id in response_orders_id_list]
         self.assertEqual(response_orders_list, response_orders_list)
 
+    # unauthorized user can't see details of order (403)
+    def test_if_unauthorized_user_cant_see_orders_and_details_of_order(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"2\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.client.force_authenticate(user=None)
+        response = self.client.get(self.current_profile_order_list_url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # other user cant see others orders on order  (403)
+    def test_if_other_user_cant_see_details_of_others_user_order(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"2\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.client.force_authenticate(user=self.user2)
+        response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 # TODO: authorized user can see details of order he created (200) and summarized price is counted
 # TODO: authorized user can delete an order he created (20X?) and on the order list there is only one order left
 # TODO: authorized user can edit an order he created (20X?) and summarized price has changed
-# TODO: other user cant see others orders on order list view (403)
-# TODO: other user cant see others order detail (403)
+
 
 # TODO: unauthorized user can view product list and can only do get request
 # TODO: unauthorized user can view product detail and can only do get request

@@ -11,4 +11,8 @@ urlpatterns = [
     path("profile/orders/",
          CurrentProfileOrderListCreateAPIView.as_view(),
          name="current-profile-order-list"),
+
+    path("profile/orders/<int:pk>/",
+         CurrentProfileOrderDetailAPIView.as_view(),
+         name="current-profile-order-detail")
 ]
