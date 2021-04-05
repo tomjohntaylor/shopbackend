@@ -217,6 +217,3 @@ class OrderOperationsTest(APITestCase):
         print(response.json())
         price_summarized_after_edit = response.json()['price_summarized']
         self.assertNotEqual(price_summarized_before_edit, price_summarized_after_edit)
-
-# TODO: unauthorized user can view product list and can only do get request
-# TODO: unauthorized user can view product detail and can only do get request
