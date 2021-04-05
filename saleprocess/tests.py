@@ -89,8 +89,30 @@ class OrderOperationsTest(APITestCase):
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-# TODO: authorized user can view current profile orders (200) and it's there orders he created just before
-# TODO: unauthorized user can't see details of order (403)
+    # authorized user can view current profile orders (200) and it's there orders he created just before
+    def test_if_authorized_user_can_view_his_orders_list(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"1\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Order.objects.get(id=response.json()['id']).profile, Profile.objects.get(user=self.user1))
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"2\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        response = self.client.get(self.current_profile_order_list_url)
+        response_orders_id_list = [ord['id'] for ord in response.json()]
+        orders_list = list(Order.objects.filter(profile=Profile.objects.get(user=self.user1)))
+        response_orders_list = [Order.objects.get(id=id) for id in response_orders_id_list]
+        self.assertEqual(response_orders_list, response_orders_list)
+
+
 # TODO: authorized user can see details of order he created (200) and summarized price is counted
 # TODO: authorized user can delete an order he created (20X?) and on the order list there is only one order left
 # TODO: authorized user can edit an order he created (20X?) and summarized price has changed
