@@ -34,7 +34,6 @@ class ProfileCreationAndViewTest(APITestCase):
         self.assertEqual(Profile.objects.get(id=response.json()['id']), Profile.objects.get(user=self.user))
 
 
-# TODO:
 class OrderOperationsTest(APITestCase):
     current_profile_detail_url = reverse("current-profile-detail")
     current_profile_order_list_url = reverse("current-profile-order-list")
@@ -70,7 +69,13 @@ class OrderOperationsTest(APITestCase):
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Order.objects.get(id=response.json()['id']).profile, Profile.objects.get(user=self.user1))
-
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"2\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.assertEqual(len(Order.objects.filter(profile=Profile.objects.get(user=self.user1))), 2)
 
 
 # TODO: authorized user can't create order passing product id that doesnt exist
