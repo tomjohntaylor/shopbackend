@@ -157,7 +157,22 @@ class OrderOperationsTest(APITestCase):
         response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-# TODO: authorized user can see details of order he created (200) and summarized price is counted
+
+    # authorized user can see details of order he created (200) and summarized price is counted
+    def test_if_authorized_user_can_see_details_of_his_order_with_summarized_prices_counted(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"1\": \"1\", \"2\": \"1\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data['billing_address'], response.json()['billing_address'])
+        summarized_price_expected = sum([product.price for product in Product.objects.all()])
+        self.assertEqual(str(summarized_price_expected), response.json()['price_summarized'])
+
 # TODO: authorized user can delete an order he created (20X?) and on the order list there is only one order left
 # TODO: authorized user can edit an order he created (20X?) and summarized price has changed
 
