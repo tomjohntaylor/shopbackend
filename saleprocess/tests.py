@@ -64,7 +64,7 @@ class OrderOperationsTest(APITestCase):
         data = {
             "billing_address": "Some address",
             "delivery_address": "Some address",
-            "products_ids_and_qty": "{\"1\": \"0\"}"
+            "products_ids_and_qty": "{\"1\": \"1\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -72,7 +72,7 @@ class OrderOperationsTest(APITestCase):
         data = {
             "billing_address": "Some other address",
             "delivery_address": "Some other address",
-            "products_ids_and_qty": "{\"2\": \"0\"}"
+            "products_ids_and_qty": "{\"2\": \"1\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(len(Order.objects.filter(profile=Profile.objects.get(user=self.user1))), 2)
@@ -83,7 +83,25 @@ class OrderOperationsTest(APITestCase):
         data = {
             "billing_address": "Some address",
             "delivery_address": "Some address",
-            "products_ids_and_qty": "{\"3\": \"0\"}"
+            "products_ids_and_qty": "{\"3\": \"1\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    # authorized user can't create order passing product qty less or equal zero
+    def test_if_authorized_user_cant_create_order_if_passing_non_positive_integer_as_qty(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"1\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"1\": \"asd\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -94,7 +112,7 @@ class OrderOperationsTest(APITestCase):
         data = {
             "billing_address": "Some address",
             "delivery_address": "Some address",
-            "products_ids_and_qty": "{\"1\": \"0\"}"
+            "products_ids_and_qty": "{\"1\": \"1\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -102,7 +120,7 @@ class OrderOperationsTest(APITestCase):
         data = {
             "billing_address": "Some other address",
             "delivery_address": "Some other address",
-            "products_ids_and_qty": "{\"2\": \"0\"}"
+            "products_ids_and_qty": "{\"2\": \"1\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         response = self.client.get(self.current_profile_order_list_url)
@@ -117,7 +135,7 @@ class OrderOperationsTest(APITestCase):
         data = {
             "billing_address": "Some other address",
             "delivery_address": "Some other address",
-            "products_ids_and_qty": "{\"2\": \"0\"}"
+            "products_ids_and_qty": "{\"2\": \"1\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         self.client.force_authenticate(user=None)
@@ -126,13 +144,13 @@ class OrderOperationsTest(APITestCase):
         response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # other user cant see others orders on order  (403)
+    # other user cant see others orders on order (403)
     def test_if_other_user_cant_see_details_of_others_user_order(self):
         self.client.force_authenticate(user=self.user1)
         data = {
             "billing_address": "Some other address",
             "delivery_address": "Some other address",
-            "products_ids_and_qty": "{\"2\": \"0\"}"
+            "products_ids_and_qty": "{\"2\": \"1\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
         self.client.force_authenticate(user=self.user2)
