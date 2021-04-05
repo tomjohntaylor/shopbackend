@@ -1,9 +1,12 @@
+import json
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from saleprocess.models import Profile
+from product.models import Product
+
 
 
 class ProfileCreationAndViewTest(APITestCase):
@@ -31,15 +34,49 @@ class ProfileCreationAndViewTest(APITestCase):
         self.assertEqual(Profile.objects.get(id=response.json()['id']), Profile.objects.get(user=self.user))
 
 
-# TODO: unauthorized user can't create new order (403)
-# TODO: authorized user can create new order (200) and it's his orders
-# TODO: authorized user can create second order (200) and it's his orders
+# TODO: authorized user can create second order (200) and it's his order
+class OrderOperationsTest(APITestCase):
+    current_profile_detail_url = reverse("current-profile-detail")
+    current_profile_order_list_url = reverse("current-profile-order-list")
+    # current_profile_order_detail_url = reverse("current-profile-order-detail", kwargs={"pk": x})
+
+    def setUp(self):
+        self.user1 = User.objects.create_user(username="randomuser1",
+                                              password="very-strong-password")
+        self.user2 = User.objects.create_user(username="randomuser2",
+                                              password="very-strong-password")
+        self.product1 = Product.objects.create(name="Samson",
+                                                    description="very-strong-password",
+                                                    price=999.99)
+        self.product2 = Product.objects.create(name="Xiajuma",
+                                                    description="very-strong-password",
+                                                    price=1)
+
+    # unauthorized user can't create new order (403)
+    def test_if_unauthorized_user_cant_create_new_order(self):
+        self.client.force_authenticate(user=None)
+        data = {"1": "0"}
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # authorized user can create new order (200) and it's his order
+    def test_if_authorized_user_can_create_new_order(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"1\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
 # TODO: authorized user can't create order passing product id that doesnt exist
 # TODO: authorized user can view current profile orders (200) and it's there orders he created just before
 # TODO: unauthorized user can't see details of order (403)
-# TODO: authorized user can see details of order he created (200)
+# TODO: authorized user can see details of order he created (200) and summarized price is counted
 # TODO: authorized user can delete an order he created (20X?) and on the order list there is only one order left
-# TODO: authorized user can edit an order he created (20X?) and on the order detail and order list order is edited
+# TODO: authorized user can edit an order he created (20X?) and summarized price has changed
 # TODO: other user cant see others orders on order list view (403)
 # TODO: other user cant see others order detail (403)
 

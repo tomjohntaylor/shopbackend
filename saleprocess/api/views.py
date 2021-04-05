@@ -1,9 +1,10 @@
 from rest_framework import generics
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from saleprocess.models import Profile
-from saleprocess.api.serializers import ProfileSerializer
+from saleprocess.models import Profile, Order
+from saleprocess.api.serializers import ProfileSerializer, OrderSerializer
 
 
 class CurrentProfileDetailAPIView(generics.RetrieveAPIView):
@@ -14,3 +15,16 @@ class CurrentProfileDetailAPIView(generics.RetrieveAPIView):
     def get(self, request, *args, **kwargs):
         profile_serializer = ProfileSerializer(request.user)
         return Response(profile_serializer.data)
+
+
+class CurrentProfileOrderListCreateAPIView(generics.ListCreateAPIView):
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        profile = get_object_or_404(Profile, user=self.request.user)
+        return Order.objects.filter(profile=profile)
+
+    def perform_create(self, serializer):
+        profile = get_object_or_404(Profile, user=self.request.user)
+        serializer.save(profile=profile)
