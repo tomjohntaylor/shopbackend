@@ -29,10 +29,14 @@ class Order(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='orders')
 
     def __str__(self):
-        return self.order_nr
+        return 'Order nr: ' + str(self.id)
 
 
-@receiver(pre_save, sender=Order)
+@receiver(post_save, sender=Order)
 def order_price_summarize(sender, instance, **kwargs):
     products_in_order = [Product.objects.get(id=product_id) for product_id in instance.products_ids_and_qty.keys()]
-    instance.price_summarized = sum([product.price for product in products_in_order])
+    products_qty_list = instance.products_ids_and_qty.values()
+    zipped_list = zip(products_in_order, products_qty_list)
+    if not instance.price_summarized or float(instance.price_summarized) != sum([float(product.price)*int(qty) for product, qty in zipped_list]):
+       instance.price_summarized = sum([float(product.price)*int(qty) for product, qty in zipped_list])
+       instance.save()

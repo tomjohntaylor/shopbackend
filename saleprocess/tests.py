@@ -173,9 +173,50 @@ class OrderOperationsTest(APITestCase):
         summarized_price_expected = sum([product.price for product in Product.objects.all()])
         self.assertEqual(str(summarized_price_expected), response.json()['price_summarized'])
 
-# TODO: authorized user can delete an order he created (20X?) and on the order list there is only one order left
-# TODO: authorized user can edit an order he created (20X?) and summarized price has changed
+    # authorized user can delete an order he created (20X?) and on the order list there is only one order left
+    def test_if_authorized_user_can_delete_his_order(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"1\": \"1\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"2\": \"1\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        response = self.client.get(self.current_profile_order_list_url)
+        self.assertEqual(2, len(response.json()))
+        response = self.client.delete(reverse("current-profile-order-detail", kwargs={"pk": 1}))
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        response = self.client.get(self.current_profile_order_list_url)
+        self.assertEqual(1, len(response.json()))
 
+# TODO: authorized user can edit an order he created (20X?) and summarized price has changed
+    def test_if_authorized_user_can_edit_his_order(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"1\": \"1\", \"2\": \"1\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
+        price_summarized_before_edit = response.json()['price_summarized']
+        data = {
+            "billing_address": "Some other address",
+            "delivery_address": "Some other address",
+            "products_ids_and_qty": "{\"1\": \"2\", \"2\": \"2\"}"
+        }
+        response = self.client.put(reverse("current-profile-order-detail", kwargs={"pk": 1}), data)
+        print(response.json())
+        response = self.client.get(reverse("current-profile-order-detail", kwargs={"pk": 1}))
+        print(response.json())
+        price_summarized_after_edit = response.json()['price_summarized']
+        self.assertNotEqual(price_summarized_before_edit, price_summarized_after_edit)
 
 # TODO: unauthorized user can view product list and can only do get request
 # TODO: unauthorized user can view product detail and can only do get request

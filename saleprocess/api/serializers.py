@@ -15,6 +15,7 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         exclude = ('profile',)
+        read_only_fields = ('price_summarized',)
         depth = 1
 
     def validate_products_ids_and_qty(self, value):
