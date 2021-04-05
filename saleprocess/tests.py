@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from saleprocess.models import Profile
+from saleprocess.models import Profile, Order
 from product.models import Product
 
 
@@ -34,7 +34,7 @@ class ProfileCreationAndViewTest(APITestCase):
         self.assertEqual(Profile.objects.get(id=response.json()['id']), Profile.objects.get(user=self.user))
 
 
-# TODO: authorized user can create second order (200) and it's his order
+# TODO:
 class OrderOperationsTest(APITestCase):
     current_profile_detail_url = reverse("current-profile-detail")
     current_profile_order_list_url = reverse("current-profile-order-list")
@@ -68,8 +68,10 @@ class OrderOperationsTest(APITestCase):
             "products_ids_and_qty": "{\"1\": \"0\"}"
         }
         response = self.client.post(self.current_profile_order_list_url, data)
-        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Order.objects.get(id=response.json()['id']).profile, Profile.objects.get(user=self.user1))
+
+
 
 # TODO: authorized user can't create order passing product id that doesnt exist
 # TODO: authorized user can view current profile orders (200) and it's there orders he created just before
