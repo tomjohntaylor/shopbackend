@@ -78,7 +78,17 @@ class OrderOperationsTest(APITestCase):
         self.assertEqual(len(Order.objects.filter(profile=Profile.objects.get(user=self.user1))), 2)
 
 
-# TODO: authorized user can't create order passing product id that doesnt exist
+    # authorized user can't create order passing product id that doesnt exist
+    def test_if_authorized_user_cant_create_order_if_passing_non_existing_product(self):
+        self.client.force_authenticate(user=self.user1)
+        data = {
+            "billing_address": "Some address",
+            "delivery_address": "Some address",
+            "products_ids_and_qty": "{\"3\": \"0\"}"
+        }
+        response = self.client.post(self.current_profile_order_list_url, data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 # TODO: authorized user can view current profile orders (200) and it's there orders he created just before
 # TODO: unauthorized user can't see details of order (403)
 # TODO: authorized user can see details of order he created (200) and summarized price is counted
