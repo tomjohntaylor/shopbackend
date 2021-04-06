@@ -49,6 +49,12 @@
     shell: venv/bin/python3.8 manage.py collectstatic --noinput
     args:
       chdir: "~/sites/{{ playbook_vars.subdomain_name }}"
+  - name: Createsuperuser
+    shell: echo "from django.contrib.auth import get_user_model; User = get_user_model(); User.objects.create_superuser('adm', 'admin@myproject.com', 'qweasdzxc')" | venv/bin/python3.8 manage.py shell
+    args:
+      chdir: "~/sites/{{ playbook_vars.subdomain_name }}"
+    when: env_vars['DJANGO_DEBUG_FALSE'] == "n"
+    ignore_errors: yes
   become_user: "{{ playbook_vars.app_os_user }}"
 
 - block:
