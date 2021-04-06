@@ -1,6 +1,6 @@
 env_vars:
     SITENAME: shopapi.tj-t.com
-    DJANGO_DEBUG_FALSE: y
+    DJANGO_DEBUG_FALSE: n
     DJANGO_SECRET_KEY: asdajdhuih24iu2jwr238yrgsidf6tsd8f7shdofps'f.;'sl[r
 playbook_vars:
     subdomain_name: shopapi
