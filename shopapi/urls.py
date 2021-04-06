@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from django.conf import settings
+from django.conf.urls.static import static
 
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -28,6 +30,7 @@ urlpatterns = [
     path("", include("product.api.urls")),
 ]
 
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 schema_view = get_schema_view(
    openapi.Info(
