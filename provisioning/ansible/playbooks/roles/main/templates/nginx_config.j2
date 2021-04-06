@@ -1,13 +1,13 @@
 server {
     listen 80;
-    server_name {{ playbook_vars.domain_name }};
+    server_name {{ playbook_vars.subdomain_name }};
 
     location /static {
-        alias /home/ubuntu/sites/{{ playbook_vars.domain_name }}/static;
+        alias /home/ubuntu/sites/{{ playbook_vars.subdomain_name }}/static;
     }
 
     location / {
-        proxy_pass http://unix:/tmp/{{ playbook_vars.domain_name }}.socket;
+        proxy_pass http://unix:/tmp/{{ playbook_vars.subdomain_name }}.socket;
         proxy_set_header Host $host;
     }
 }

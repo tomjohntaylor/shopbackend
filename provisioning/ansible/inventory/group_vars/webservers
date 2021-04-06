@@ -3,6 +3,6 @@ env_vars:
     DJANGO_DEBUG_FALSE: y
     DJANGO_SECRET_KEY: asdajdhuih24iu2jwr238yrgsidf6tsd8f7shdofps'f.;'sl[r
 playbook_vars:
-    domain_name: shopapi.tj-t.com
+    subdomain_name: shopapi
     app_os_user: ubuntu
     git_url: https://github.com/tomjohntaylor/shopbackend.git

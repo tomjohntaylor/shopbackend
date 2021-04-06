@@ -11,11 +11,11 @@
   - name: write the nginx config file
     template:
       src: nginx_config.j2
-      dest: "/etc/nginx/sites-available/{{ playbook_vars.domain_name }}"
+      dest: "/etc/nginx/sites-available/{{ playbook_vars.subdomain_name }}"
   - name: Create a symbolic link
     file:
-      src: "/etc/nginx/sites-available/{{ playbook_vars.domain_name }}"
-      dest: "/etc/nginx/sites-enabled/{{ playbook_vars.domain_name }}"
+      src: "/etc/nginx/sites-available/{{ playbook_vars.subdomain_name }}"
+      dest: "/etc/nginx/sites-enabled/{{ playbook_vars.subdomain_name }}"
       state: link
   - name: Delete default nginx symbolic link
     file:
@@ -27,43 +27,43 @@
   - name: Git checkout
     git:
       repo: "{{ playbook_vars.git_url }}"
-      dest: "~/sites/{{ playbook_vars.domain_name }}"
+      dest: "~/sites/{{ playbook_vars.subdomain_name }}"
   - name: Install specified python requirements in indicated (virtualenv)
     pip:
-      requirements: "~/sites/{{ playbook_vars.domain_name }}/requirements.txt"
-      virtualenv: "~/sites/{{ playbook_vars.domain_name }}/venv"
+      requirements: "~/sites/{{ playbook_vars.subdomain_name }}/requirements.txt"
+      virtualenv: "~/sites/{{ playbook_vars.subdomain_name }}/venv"
       virtualenv_python: python3.8
   - name: write the nginx config file
     template:
       src: .env.j2
-      dest: "~/sites/{{ playbook_vars.domain_name }}/.env"
+      dest: "~/sites/{{ playbook_vars.subdomain_name }}/.env"
   - name: Run cleanup on the application installed in django_dir
     shell: venv/bin/python3.8 manage.py makemigrations --noinput
     args:
-      chdir: "~/sites/{{ playbook_vars.domain_name }}"
+      chdir: "~/sites/{{ playbook_vars.subdomain_name }}"
   - name: Run cleanup on the application installed in django_dir
     shell: venv/bin/python3.8 manage.py migrate --noinput
     args:
-      chdir: "~/sites/{{ playbook_vars.domain_name }}"
+      chdir: "~/sites/{{ playbook_vars.subdomain_name }}"
   - name: Run cleanup on the application installed in django_dir
     shell: venv/bin/python3.8 manage.py collectstatic --noinput
     args:
-      chdir: "~/sites/{{ playbook_vars.domain_name }}"
+      chdir: "~/sites/{{ playbook_vars.subdomain_name }}"
   become_user: "{{ playbook_vars.app_os_user }}"
 
 - block:
   - name: write the nginx config file
     template:
       src: gunicorn.service.j2
-      dest: "/etc/systemd/system/gunicorn-superlists-{{ playbook_vars.domain_name }}.service"
+      dest: "/etc/systemd/system/gunicorn-{{ playbook_vars.subdomain_name }}.service"
   - name: Enable service httpd and ensure it is not masked
     systemd:
-      name: "gunicorn-superlists-{{ playbook_vars.domain_name }}"
+      name: "gunicorn-{{ playbook_vars.subdomain_name }}"
       enabled: yes
       daemon_reload: yes
   - name: Enable service httpd and ensure it is not masked
     systemd:
-      name: "gunicorn-superlists-{{ playbook_vars.domain_name }}"
+      name: "gunicorn-{{ playbook_vars.subdomain_name }}"
       state: restarted
   - name: Make sure a nginx is running
     systemd:
