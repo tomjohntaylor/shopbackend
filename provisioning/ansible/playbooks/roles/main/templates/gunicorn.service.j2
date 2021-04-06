@@ -7,7 +7,7 @@ User=ubuntu
 WorkingDirectory=/home/ubuntu/sites/{{ playbook_vars.domain_name }}
 EnvironmentFile=/home/ubuntu/sites/{{ playbook_vars.domain_name }}/.env
 
-ExecStart=/home/ubuntu/sites/{{ playbook_vars.domain_name }}/venv/bin/python3.7 /home/ubuntu/sites/{{ playbook_vars.domain_name }}/venv/bin/gunicorn --bind unix:/tmp/{{ playbook_vars.domain_name }}.socket superlists.wsgi:application
+ExecStart=/home/ubuntu/sites/{{ playbook_vars.domain_name }}/venv/bin/python3.8 /home/ubuntu/sites/{{ playbook_vars.domain_name }}/venv/bin/gunicorn --bind unix:/tmp/{{ playbook_vars.domain_name }}.socket superlists.wsgi:application
 
 [Install]
 WantedBy=multi-user.target
