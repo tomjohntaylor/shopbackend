@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name {{ playbook_vars.subdomain_name }};
+    server_name {{ env_vars.SITENAME }};
 
     location /static {
         alias /home/ubuntu/sites/{{ playbook_vars.subdomain_name }}/static;
